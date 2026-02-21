@@ -17,7 +17,11 @@
         ]) !!}
     >
 
-    @if($name)
-        <x-input-error :messages="$errors->get($name)" class="mt-2" />
+    @if($name && $errors->has($name))
+        <ul class="text-sm text-red-600 dark:text-red-400 mt-2 space-y-1">
+            @foreach ($errors->get($name) as $message)
+                <li>{{ $message }}</li>
+            @endforeach
+        </ul>
     @endif
 </div>

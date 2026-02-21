@@ -1,15 +1,15 @@
-# Boilerplate Laboratorio Laravel
+# Boilerplate Premium Laravel Base
 
-Este es un boilerplate inicial para proyectos Laravel con autenticación, roles (RBAC) y auditoría pre-configurados.
+Este es un boilerplate optimizado y unificado para proyectos Laravel 11. Se enfoca en una experiencia de usuario (UX) premium y una estructura de componentes simplificada, ideal para bases de proyectos que requieren una estética profesional desde el primer momento.
 
-## 🚀 Requisitos Previos
+## 🚀 Características Principales
 
-- **PHP** >= 8.2 (Extensiones: fileinfo, mbstring, openssl, pdo, pdo_pgsql)
-- **Composer** >= 2.x
-- **Node.js** & **NPM**
-- **PostgreSQL**
+- **Diseño Premium**: Interfaz moderna con soporte completo para modo oscuro (Dark/Light Mode) y transiciones fluidas.
+- **Autenticación Unificada**: Vistas de Laravel Breeze rediseñadas y unificadas bajo el componente premium `x-input`, reduciendo el número de archivos.
+- **Simplificación de Componentes**: Estructura de componentes optimizada (`x-card`, `x-input`, `x-button`) para un desarrollo más rápido y mantenible.
+- **Base Sólida**: Configuración de PostgreSQL y Vite lista para producción, con redirección automática a login.
 
-## 🛠️ Instalación y Configuración (Dev 1)
+## 🛠️ Instalación y Configuración
 
 1.  **Clonar el repositorio**:
     ```bash
@@ -21,37 +21,28 @@ Este es un boilerplate inicial para proyectos Laravel con autenticación, roles 
     ```bash
     composer install
     ```
-    > **Nota**: Si tienes problemas con extensiones, asegúrate de habilitarlas en tu `php.ini`.
 
 3.  **Configurar entorno**:
-    - Copiar `.env.example` a `.env` (si no existe).
-    - Configurar las credenciales de base de datos en `.env`:
-      ```ini
-      DB_CONNECTION=pgsql
-      DB_HOST=127.0.0.1
-      DB_PORT=5432
-      DB_DATABASE=boilerplate
-      DB_USERNAME=postgres
-      DB_PASSWORD=secret
-      ```
+    - Copiar `.env.example` a `.env`.
+    - Configurar las credenciales de base de datos en `.env`.
 
-4.  **Generar clave de aplicación**:
+4.  **Generar clave y Migrar**:
     ```bash
     php artisan key:generate
+    php artisan migrate
     ```
 
-5.  **Instalar dependencias de Frontend**:
+5.  **Frontend**:
     ```bash
     npm install
     npm run dev
     ```
 
-## 📦 Estructura del Proyecto
+## 📦 Estructura de Componentes
 
-- **Roles y Permisos**: Implementado con `spatie/laravel-permission`.
-- **Auditoría**: `spatie/laravel-activitylog`.
-- **Frontend**: Tailwind CSS + Alpine.js.
+- **`x-card`**: Contenedores premium con header y body personalizables.
+- **`x-input`**: Componente autónomo que integra Label, Input y Mensajes de Validación en un solo lugar.
+- **`x-primary-button`**: Botones estilizados con estados de hover y hover consistentes.
 
-## 🤝 Contribución
-
-Sigue el flujo de trabajo definido para cada Dev (1-5).
+## 🤝 Estado del Proyecto
+Este proyecto ha sido consolidado y pulido para servir como una base de inicio profesional, eliminando el "ruido" de componentes por defecto de Breeze y ofreciendo una estética cohesiva y cuidada.
