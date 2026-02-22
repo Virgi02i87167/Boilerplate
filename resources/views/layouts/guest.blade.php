@@ -17,9 +17,20 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
-<body class="font-sans text-gray-900 antialiased">
-    <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gray-100 dark:bg-gray-900">
-        {{ $slot }}
+<body class="font-sans text-gray-900 antialiased selection:bg-indigo-500 selection:text-white">
+    <div
+        class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-[#FDFDFC] dark:bg-[#0a0a0a] relative overflow-hidden">
+        <!-- Fondos Decorativos Premium -->
+        <div
+            class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-indigo-200/30 dark:bg-indigo-900/10 rounded-full blur-[120px] pointer-events-none">
+        </div>
+        <div
+            class="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-200/30 dark:bg-purple-900/10 rounded-full blur-[120px] pointer-events-none">
+        </div>
+
+        <div class="relative z-10 w-full flex flex-col items-center">
+            {{ $slot }}
+        </div>
     </div>
 
     <!-- Toggle Dark Mode Floating -->
