@@ -15,10 +15,10 @@ class RoleAndPermissionSeeder extends Seeder
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
 
         // Crear Permisos
-        Permission::create(['name' => 'acceder-dashboard']);
-        Permission::create(['name' => 'editar-perfil']);
-        Permission::create(['name' => 'eliminar-cuenta']);
-        Permission::create(['name' => 'gestionar-usuarios']);
+        Permission::firstOrCreate(['name' => 'acceder-dashboard']);
+        Permission::firstOrCreate(['name' => 'editar-perfil']);
+        Permission::firstOrCreate(['name' => 'eliminar-cuenta']);
+        Permission::firstOrCreate(['name' => 'gestionar-usuarios']);
 
         // Crear Roles y asignar permisos
         $roleAdmin = Role::create(['name' => 'Admin']);

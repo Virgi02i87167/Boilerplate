@@ -30,6 +30,7 @@ Este es un boilerplate optimizado y unificado para proyectos Laravel 11. Se enfo
     ```bash
     php artisan key:generate
     php artisan migrate
+    php artisan serve
     ```
 
 5.  **Frontend**:

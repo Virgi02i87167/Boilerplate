@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}"
-    x-data="{ darkMode: localStorage.getItem('darkMode') === 'true' }" :class="{ 'dark': darkMode }">
+    x-data="{ darkMode: localStorage.getItem('darkMode') === 'true' }" 
+    x-init="$watch('darkMode', val => localStorage.setItem('darkMode', val))"
+    :class="{ 'dark': darkMode }">
 
 <head>
     <meta charset="utf-8">
@@ -34,10 +36,38 @@
     </div>
 
     <!-- Toggle Dark Mode Floating -->
-    <button @click="darkMode = !darkMode; localStorage.setItem('darkMode', darkMode)"
-        class="fixed bottom-8 right-8 p-3 bg-white dark:bg-[#161615] border border-[#e3e3e0] dark:border-[#3E3E3A] rounded-full shadow-lg transition-transform hover:scale-110 dark:text-white">
-        <span x-text="darkMode ? '☀️' : '🌙'"></span>
+    <button onclick="toggleDarkMode()"
+        class="fixed bottom-8 right-8 p-3 bg-white dark:bg-[#161615] border border-[#e3e3e0] dark:border-[#3E3E3A] rounded-full shadow-lg transition-transform hover:scale-110 dark:text-white z-50">
+        <span id="theme-icon">🌙</span>
     </button>
+
+    <script>
+        function updateTheme() {
+            const isDark = localStorage.getItem('darkMode') === 'true';
+            document.documentElement.classList.toggle('dark', isDark);
+            const icon = document.getElementById('theme-icon');
+            if (icon) {
+                icon.innerText = isDark ? '☀️' : '🌙';
+            }
+        }
+
+        function toggleDarkMode() {
+            const isDark = localStorage.getItem('darkMode') === 'true';
+            localStorage.setItem('darkMode', !isDark);
+            updateTheme();
+            // Optional: sync with Alpine if it's there
+            if (window.Alpine) {
+                // This will try to find the html element and update its data
+                const html = document.querySelector('html');
+                if (html && html.__x) {
+                    html.__x.$data.darkMode = !isDark;
+                }
+            }
+        }
+
+        // Initialize theme on load
+        updateTheme();
+    </script>
 </body>
 
 </html>
