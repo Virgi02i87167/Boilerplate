@@ -268,7 +268,7 @@
                         <div class="relative flex items-center">
                             <span class="absolute left-3 text-sm text-gray-400">$</span>
                             <input type="number" step="0.01" x-model="efectivoRecibido"
-                                class="w-full pl-7 pr-3 py-2.5 border border-gray-200 dark:border-[#3E3E3A] rounded-xl dark:bg-[#1C1C1B] dark:text-white outline-none focus:ring-2 focus:ring-indigo-500 text-sm font-bold transition">
+                                class="w-full pl-9 pr-3 py-2.5 border border-gray-200 dark:border-[#3E3E3A] rounded-xl dark:bg-[#1C1C1B] dark:text-white outline-none focus:ring-2 focus:ring-indigo-500 text-sm font-bold transition">
                         </div>
                     </div>
 
@@ -277,7 +277,7 @@
                         <div class="relative flex items-center">
                             <span class="absolute left-3 text-sm text-gray-400">$</span>
                             <input type="text" :value="cambio" readonly
-                                class="w-full pl-7 pr-3 py-2.5 bg-gray-50 dark:bg-[#252524]/50 border border-gray-200 dark:border-[#3E3E3A] rounded-xl dark:text-white outline-none text-sm font-black transition">
+                                class="w-full pl-9 pr-3 py-2.5 bg-gray-50 dark:bg-[#252524]/50 border border-gray-200 dark:border-[#3E3E3A] rounded-xl dark:text-white outline-none text-sm font-black transition">
                         </div>
                     </div>
                 </div>
