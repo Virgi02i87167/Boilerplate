@@ -21,6 +21,7 @@ class StoreReservacionRequest extends FormRequest
             'habitacion_id' => 'required|exists:habitaciones,id',
             'fecha_entrada' => 'required|date|after_or_equal:today',
             'fecha_salida' => 'required|date|after:fecha_entrada',
+            'metodo_pago' => 'required|string|in:efectivo,tarjeta,transferencia',
             'notas' => 'nullable|string',
         ];
     }

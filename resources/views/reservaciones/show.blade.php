@@ -1,15 +1,22 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="max-w-3xl mx-auto">
+<div class="max-w-3xl mx-auto" x-data="{ modalOpen: false, tipoDoc: 'ticket', metodoPago: 'efectivo' }">
     <div class="flex items-center justify-between mb-6">
         <h1 class="text-2xl font-bold text-gray-800 dark:text-white">Detalle de Reserva #{{ $reservacion->id }}</h1>
         <div class="flex gap-2">
-            <button onclick="window.print()" class="px-4 py-2 bg-gray-100 dark:bg-[#1C1C1B] dark:text-white rounded-lg hover:bg-gray-200 transition text-sm font-bold flex items-center gap-2">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
-                Imprimir
-            </button>
-            <a href="{{ route('reservaciones.index') }}" class="px-4 py-2 bg-indigo-600 text-white rounded-lg font-bold text-sm">Volver</a>
+            @if($reservacion->estado === 'completada')
+                <button onclick="window.print()" class="px-4 py-2 bg-gray-100 dark:bg-[#1C1C1B] dark:text-white rounded-lg hover:bg-gray-200 transition text-sm font-bold flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                    Imprimir
+                </button>
+            @else
+                <button @click="modalOpen = true" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition text-sm font-bold flex items-center gap-2 shadow-lg shadow-emerald-500/20">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+                    Procesar Pago
+                </button>
+            @endif
+            <a href="{{ route('reservaciones.listado') }}" class="px-4 py-2 bg-indigo-600 text-white rounded-lg font-bold text-sm">Volver</a>
         </div>
     </div>
 
@@ -39,9 +46,56 @@
                     <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Habitación</h3>
                     <div class="text-lg font-bold text-gray-900 dark:text-white">Número #{{ $reservacion->habitacion->numero_habitacion }}</div>
                     <div class="text-sm text-gray-500">Tipo: {{ ucfirst($reservacion->habitacion->tipo) }}</div>
-                    <div class="text-sm text-gray-500">Estado Reserva: {{ ucfirst($reservacion->estado) }}</div>
+                    <div class="text-sm text-gray-500 flex items-center gap-1.5">
+                        <span class="text-gray-400">Estado:</span>
+                        <span class="px-2 py-0.5 rounded text-xs font-bold capitalize {{ $reservacion->estado === 'completada' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400' }}">
+                            {{ ucfirst($reservacion->estado) }}
+                        </span>
+                    </div>
                 </div>
             </div>
+
+            @if($reservacion->estado === 'completada')
+            <!-- DETALLE DE FACTURACIÓN Y PAGO -->
+            <div class="grid grid-cols-2 gap-8 border-b dark:border-[#2a2a2a] pb-8">
+                <div>
+                    <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Comprobante Fiscal</h3>
+                    <div class="text-base font-bold text-gray-900 dark:text-white mb-2">
+                        {{ $reservacion->tipo_documento === 'credito_fiscal' ? '📄 Crédito Fiscal (DTE)' : '📄 Factura Simplificada (Ticket)' }}
+                    </div>
+                    @if($reservacion->tipo_documento === 'credito_fiscal')
+                        <div class="text-xs text-gray-500 mt-2 space-y-1 bg-gray-50 dark:bg-[#1C1C1B] p-4 rounded-2xl border border-gray-100 dark:border-[#2a2a2a] billing-card">
+                            <div><strong class="text-gray-700 dark:text-gray-300">Razón Social:</strong> {{ $reservacion->razon_social }}</div>
+                            <div><strong class="text-gray-700 dark:text-gray-300">NRC:</strong> {{ $reservacion->nrc }}</div>
+                            <div><strong class="text-gray-700 dark:text-gray-300">NIT/DUI:</strong> {{ $reservacion->nit_dui }}</div>
+                            <div><strong class="text-gray-700 dark:text-gray-300">Giro:</strong> {{ $reservacion->giro }}</div>
+                        </div>
+                    @endif
+                </div>
+                <div>
+                    <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Detalle de Pago</h3>
+                    <div class="text-base font-bold text-gray-900 dark:text-white capitalize">
+                        @if($reservacion->metodo_pago === 'efectivo')
+                            💵 Efectivo
+                        @elseif($reservacion->metodo_pago === 'tarjeta')
+                            💳 Tarjeta
+                        @elseif($reservacion->metodo_pago === 'transferencia')
+                            🏛️ Transferencia
+                        @endif
+                    </div>
+                    @if($reservacion->metodo_pago === 'tarjeta')
+                        <div class="text-xs text-gray-500 mt-2 bg-gray-50 dark:bg-[#1C1C1B] p-3 rounded-2xl border border-gray-100 dark:border-[#2a2a2a] billing-card">
+                            <strong class="text-gray-700 dark:text-gray-300">Voucher / Referencia:</strong> {{ $reservacion->numero_referencia }}
+                        </div>
+                    @elseif($reservacion->metodo_pago === 'transferencia')
+                        <div class="text-xs text-gray-500 mt-2 space-y-1 bg-gray-50 dark:bg-[#1C1C1B] p-3 rounded-2xl border border-gray-100 dark:border-[#2a2a2a] billing-card">
+                            <div><strong class="text-gray-700 dark:text-gray-300">Banco de Destino:</strong> {{ $reservacion->banco_destino }}</div>
+                            <div><strong class="text-gray-700 dark:text-gray-300">Comprobante Nº:</strong> {{ $reservacion->numero_comprobante }}</div>
+                        </div>
+                    @endif
+                </div>
+            </div>
+            @endif
 
             <!-- FECHAS -->
             <div class="grid grid-cols-3 gap-4 bg-gray-50 dark:bg-[#1C1C1B] p-6 rounded-2xl text-center">
@@ -62,17 +116,24 @@
             <div class="flex justify-between items-center bg-indigo-50 dark:bg-indigo-900/20 p-6 rounded-2xl border border-indigo-100 dark:border-indigo-800">
                 <div>
                     <div class="text-indigo-600 dark:text-indigo-400 font-bold uppercase text-xs">Total a Pagar</div>
-                    <div class="text-sm text-gray-500">Incluye impuestos y precios por temporada</div>
+                    <div class="text-xs text-gray-500 mt-1 space-y-0.5">
+                        <div>Incluye impuestos y tarifas por temporada</div>
+                        @if($reservacion->estado === 'completada')
+                            <div>Método de Pago: <span class="font-bold capitalize text-indigo-600 dark:text-indigo-400">{{ $reservacion->metodo_pago }}</span></div>
+                        @else
+                            <div class="text-amber-500 dark:text-amber-400 font-bold">⚠️ Pendiente de Pago</div>
+                        @endif
+                    </div>
                 </div>
                 <div class="text-4xl font-black text-indigo-600 dark:text-indigo-400">
                     ${{ number_format($reservacion->precio_total, 2) }}
                 </div>
             </div>
 
-            @if($reservacion->notas)
+            @if($reservacion->notes)
             <div class="pt-4">
                 <h3 class="text-xs font-bold text-gray-400 uppercase mb-2">Notas</h3>
-                <p class="text-sm text-gray-600 dark:text-gray-400 italic">"{{ $reservacion->notas }}"</p>
+                <p class="text-sm text-gray-600 dark:text-gray-400 italic">"{{ $reservacion->notes }}"</p>
             </div>
             @endif
         </div>
@@ -80,6 +141,166 @@
         <!-- FOOTER TICKET -->
         <div class="bg-gray-50 dark:bg-[#1C1C1B] p-6 text-center text-[10px] text-gray-400 uppercase tracking-widest">
             Gracias por su preferencia • Este documento es un comprobante de reserva interna
+        </div>
+    </div>
+
+    <!-- MODAL DE PROCESAR PAGO (AlpineJS) -->
+    <div x-show="modalOpen" 
+        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+        x-transition:enter="transition ease-out duration-300"
+        x-transition:enter-start="opacity-0"
+        x-transition:enter-end="opacity-100"
+        x-transition:leave="transition ease-in duration-200"
+        x-transition:leave-start="opacity-100"
+        x-transition:leave-end="opacity-0"
+        style="display: none;">
+        
+        <!-- Modal Card -->
+        <div @click.away="modalOpen = false" 
+            class="bg-white dark:bg-[#161615] rounded-3xl border border-gray-100 dark:border-[#2a2a2a] w-full max-w-lg p-6 space-y-6 shadow-2xl overflow-y-auto max-h-[90vh]"
+            x-transition:enter="transition ease-out duration-300 transform"
+            x-transition:enter-start="opacity-0 scale-95 translate-y-4"
+            x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+            x-transition:leave="transition ease-in duration-200 transform"
+            x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+            x-transition:leave-end="opacity-0 scale-95 translate-y-4">
+            
+            <div class="flex items-center justify-between border-b dark:border-[#2a2a2a] pb-4">
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                    <span>💵</span> Procesar Pago
+                </h3>
+                <button @click="modalOpen = false" class="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-[#252524] text-gray-400 dark:text-white transition">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+
+            <form action="{{ route('reservaciones.procesarPago', $reservacion) }}" method="POST" class="space-y-4">
+                @csrf
+                
+                <!-- Tipo de Comprobante / Tabs -->
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Tipo de Documento</label>
+                    <div class="grid grid-cols-2 gap-2 bg-gray-50 dark:bg-[#1C1C1B] p-1.5 rounded-2xl border dark:border-[#2a2a2a]">
+                        <button type="button" @click="tipoDoc = 'ticket'" 
+                            :class="tipoDoc === 'ticket' ? 'bg-white dark:bg-[#252524] text-indigo-600 dark:text-indigo-400 shadow-sm font-extrabold' : 'text-gray-500 hover:text-gray-700 dark:hover:text-white font-medium'"
+                            class="py-2.5 rounded-xl text-sm transition-all text-center">
+                            Consumidor Final
+                        </button>
+                        <button type="button" @click="tipoDoc = 'credito_fiscal'" 
+                            :class="tipoDoc === 'credito_fiscal' ? 'bg-white dark:bg-[#252524] text-indigo-600 dark:text-indigo-400 shadow-sm font-extrabold' : 'text-gray-500 hover:text-gray-700 dark:hover:text-white font-medium'"
+                            class="py-2.5 rounded-xl text-sm transition-all text-center">
+                            Crédito Fiscal
+                        </button>
+                    </div>
+                    <input type="hidden" name="tipo_documento" :value="tipoDoc">
+                </div>
+
+                <!-- Campos de Crédito Fiscal (Condicionales) -->
+                <div x-show="tipoDoc === 'credito_fiscal'" 
+                    x-transition:enter="transition ease-out duration-200"
+                    x-transition:enter-start="opacity-0 -translate-y-2"
+                    x-transition:enter-end="opacity-100 translate-y-0"
+                    class="space-y-4 p-4 border border-indigo-100 dark:border-indigo-900/30 bg-indigo-50/20 dark:bg-indigo-950/5 rounded-2xl">
+                    
+                    <div class="relative">
+                        <label class="block text-[11px] font-bold text-gray-500 dark:text-gray-400 mb-1">Razón Social <span class="text-red-500">*</span></label>
+                        <input type="text" name="razon_social" :required="tipoDoc === 'credito_fiscal'" placeholder="Nombre de la empresa"
+                            class="w-full p-2.5 border border-gray-200 dark:border-[#3E3E3A] rounded-xl dark:bg-[#1C1C1B] dark:text-white outline-none focus:ring-2 focus:ring-indigo-500 text-sm transition">
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-[11px] font-bold text-gray-500 dark:text-gray-400 mb-1">NRC <span class="text-red-500">*</span></label>
+                            <input type="text" name="nrc" :required="tipoDoc === 'credito_fiscal'" placeholder="000000-0"
+                                class="w-full p-2.5 border border-gray-200 dark:border-[#3E3E3A] rounded-xl dark:bg-[#1C1C1B] dark:text-white outline-none focus:ring-2 focus:ring-indigo-500 text-sm transition">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold text-gray-500 dark:text-gray-400 mb-1">NIT / DUI <span class="text-red-500">*</span></label>
+                            <input type="text" name="nit_dui" :required="tipoDoc === 'credito_fiscal'" placeholder="0000-000000-000-0"
+                                class="w-full p-2.5 border border-gray-200 dark:border-[#3E3E3A] rounded-xl dark:bg-[#1C1C1B] dark:text-white outline-none focus:ring-2 focus:ring-indigo-500 text-sm transition">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-[11px] font-bold text-gray-500 dark:text-gray-400 mb-1">Giro / Actividad Económica <span class="text-red-500">*</span></label>
+                        <select name="giro" :required="tipoDoc === 'credito_fiscal'"
+                            class="w-full p-2.5 border border-gray-200 dark:border-[#3E3E3A] rounded-xl dark:bg-[#1C1C1B] dark:text-white outline-none focus:ring-2 focus:ring-indigo-500 text-sm transition cursor-pointer">
+                            <option value="">-- Buscar actividad (Hacienda) --</option>
+                            <option value="Servicios de Hotelería y Alojamiento">Servicios de Hotelería y Alojamiento</option>
+                            <option value="Servicios de Restaurante y Alimentación">Servicios de Restaurante y Alimentación</option>
+                            <option value="Servicios Comerciales y Minoristas">Servicios Comerciales y Minoristas</option>
+                            <option value="Servicios de Transporte y Turismo">Servicios de Transporte y Turismo</option>
+                            <option value="Servicios Médicos y Farmacéuticos">Servicios Médicos y Farmacéuticos</option>
+                            <option value="Actividad Comercial General">Actividad Comercial General</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Forma de Pago -->
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Forma de Pago</label>
+                    <select name="metodo_pago" x-model="metodoPago" required
+                        class="w-full p-2.5 border border-gray-200 dark:border-[#3E3E3A] rounded-xl dark:bg-[#1C1C1B] dark:text-white outline-none focus:ring-2 focus:ring-indigo-500 text-sm transition cursor-pointer">
+                        <option value="efectivo">💵 Efectivo</option>
+                        <option value="tarjeta">💳 Tarjeta de Crédito / Débito</option>
+                        <option value="transferencia">🏛️ Transferencia Bancaria</option>
+                    </select>
+                </div>
+
+                <!-- Campo de Rastreabilidad para Tarjeta (Condicional) -->
+                <div x-show="metodoPago === 'tarjeta'" 
+                    x-transition:enter="transition ease-out duration-200"
+                    x-transition:enter-start="opacity-0 -translate-y-2"
+                    x-transition:enter-end="opacity-100 translate-y-0"
+                    class="space-y-3 p-4 border border-indigo-100 dark:border-indigo-900/30 bg-indigo-50/20 dark:bg-indigo-950/5 rounded-2xl">
+                    <div>
+                        <label class="block text-[11px] font-bold text-gray-500 dark:text-gray-400 mb-1">Número de Referencia / Voucher <span class="text-red-500">*</span></label>
+                        <input type="text" name="numero_referencia" :required="metodoPago === 'tarjeta'" placeholder="Ej. 12345678"
+                            class="w-full p-2.5 border border-gray-200 dark:border-[#3E3E3A] rounded-xl dark:bg-[#1C1C1B] dark:text-white outline-none focus:ring-2 focus:ring-indigo-500 text-sm transition">
+                    </div>
+                </div>
+
+                <!-- Campos de Rastreabilidad para Transferencia (Condicional) -->
+                <div x-show="metodoPago === 'transferencia'" 
+                    x-transition:enter="transition ease-out duration-200"
+                    x-transition:enter-start="opacity-0 -translate-y-2"
+                    x-transition:enter-end="opacity-100 translate-y-0"
+                    class="space-y-4 p-4 border border-indigo-100 dark:border-indigo-900/30 bg-indigo-50/20 dark:bg-indigo-950/5 rounded-2xl">
+                    
+                    <div>
+                        <label class="block text-[11px] font-bold text-gray-500 dark:text-gray-400 mb-1">Banco de Destino <span class="text-red-500">*</span></label>
+                        <select name="banco_destino" :required="metodoPago === 'transferencia'"
+                            class="w-full p-2.5 border border-gray-200 dark:border-[#3E3E3A] rounded-xl dark:bg-[#1C1C1B] dark:text-white outline-none focus:ring-2 focus:ring-indigo-500 text-sm transition cursor-pointer">
+                            <option value="">-- Seleccionar Banco --</option>
+                            <option value="Banco Agrícola">Banco Agrícola</option>
+                            <option value="BAC Credomatic">BAC Credomatic</option>
+                            <option value="Banco Cuscatlán">Banco Cuscatlán</option>
+                            <option value="Banco Davivienda">Banco Davivienda</option>
+                            <option value="Banco Promerica">Banco Promerica</option>
+                            <option value="Banco de Fomento Agropecuario">Banco de Fomento Agropecuario</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-[11px] font-bold text-gray-500 dark:text-gray-400 mb-1">Número de Comprobante <span class="text-red-500">*</span></label>
+                        <input type="text" name="numero_comprobante" :required="metodoPago === 'transferencia'" placeholder="Ej. TR-987654"
+                            class="w-full p-2.5 border border-gray-200 dark:border-[#3E3E3A] rounded-xl dark:bg-[#1C1C1B] dark:text-white outline-none focus:ring-2 focus:ring-indigo-500 text-sm transition">
+                    </div>
+                </div>
+
+                <!-- Footer del Formulario -->
+                <div class="flex items-center justify-end gap-3 border-t dark:border-[#2a2a2a] pt-4 mt-2">
+                    <button type="button" @click="modalOpen = false"
+                        class="px-5 py-2.5 bg-gray-100 dark:bg-[#252524] text-gray-700 dark:text-white font-bold rounded-xl hover:bg-gray-200 dark:hover:bg-[#3E3E3A] transition text-sm">
+                        Cancelar
+                    </button>
+                    <button type="submit"
+                        class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl transition flex items-center gap-1.5 shadow-lg shadow-emerald-500/20 text-sm">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+                        CONFIRMAR
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
@@ -219,6 +440,14 @@
 
     #ticket-imprimible .text-sm {
         font-size: 10px !important;
+    }
+
+    /* Ocultar bordes de tarjetas secundarias de facturas y auditoría en la impresión térmica */
+    #ticket-imprimible .billing-card {
+        border: none !important;
+        padding: 4px 0 !important;
+        margin: 0 !important;
+        background: transparent !important;
     }
 
     /* Fechas alineadas verticalmente sin columnas ni iconos */

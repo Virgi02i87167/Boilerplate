@@ -282,6 +282,18 @@
                     </div>
                 </div>
 
+                <!-- Método de Pago -->
+                <div>
+                    <label class="block font-bold text-gray-700 dark:text-gray-300 mb-2">Método de Pago</label>
+                    <select name="metodo_pago" required
+                        class="w-full p-2.5 border border-gray-200 dark:border-[#3E3E3A] rounded-xl dark:bg-[#1C1C1B] dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none transition cursor-pointer">
+                        <option value="efectivo" {{ old('metodo_pago') == 'efectivo' ? 'selected' : '' }}>💵 Efectivo</option>
+                        <option value="tarjeta" {{ old('metodo_pago') == 'tarjeta' ? 'selected' : '' }}>💳 Tarjeta de Crédito / Débito</option>
+                        <option value="transferencia" {{ old('metodo_pago') == 'transferencia' ? 'selected' : '' }}>🏛️ Transferencia Bancaria</option>
+                    </select>
+                    @error('metodo_pago') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                </div>
+
                 <!-- Notas -->
                 <div>
                     <label class="block font-bold text-gray-700 dark:text-gray-300 mb-2">Notas Especiales</label>

@@ -64,6 +64,7 @@ class ReservacionController extends Controller
                     'fecha_salida' => $request->fecha_salida,
                     'precio_total' => $precioTotal,
                     'estado' => 'confirmada',
+                    'metodo_pago' => $request->metodo_pago,
                     'notas' => $request->notas,
                 ]);
 
@@ -112,6 +113,75 @@ class ReservacionController extends Controller
         $reservacion->delete();
         return redirect()->route('reservaciones.index')
             ->with('success', 'Reserva eliminada correctamente');
+    }
+
+    public function procesarPago(Request $request, Reservacion $reservacion)
+    {
+        Gate::authorize('gestionar-reservaciones');
+
+        $rules = [
+            'tipo_documento' => 'required|string|in:ticket,credito_fiscal',
+            'metodo_pago' => 'required|string|in:efectivo,tarjeta,transferencia',
+        ];
+
+        // Validaciones condicionales de Crédito Fiscal
+        if ($request->tipo_documento === 'credito_fiscal') {
+            $rules['razon_social'] = 'required|string|max:255';
+            $rules['nrc'] = 'required|string|max:50';
+            $rules['nit_dui'] = 'required|string|max:50';
+            $rules['giro'] = 'required|string|max:255';
+        }
+
+        // Validaciones condicionales de Rastreabilidad Bancaria/Voucher
+        if ($request->metodo_pago === 'tarjeta') {
+            $rules['numero_referencia'] = 'required|string|max:100';
+        } elseif ($request->metodo_pago === 'transferencia') {
+            $rules['banco_destino'] = 'required|string|max:100';
+            $rules['numero_comprobante'] = 'required|string|max:100';
+        }
+
+        $validated = $request->validate($rules);
+
+        // Guardar información de pago y completar reservación
+        $updateData = [
+            'estado' => 'completada',
+            'metodo_pago' => $validated['metodo_pago'],
+            'tipo_documento' => $validated['tipo_documento'],
+        ];
+
+        if ($request->tipo_documento === 'credito_fiscal') {
+            $updateData['razon_social'] = $validated['razon_social'];
+            $updateData['nrc'] = $validated['nrc'];
+            $updateData['nit_dui'] = $validated['nit_dui'];
+            $updateData['giro'] = $validated['giro'];
+        } else {
+            $updateData['razon_social'] = null;
+            $updateData['nrc'] = null;
+            $updateData['nit_dui'] = null;
+            $updateData['giro'] = null;
+        }
+
+        if ($request->metodo_pago === 'tarjeta') {
+            $updateData['numero_referencia'] = $validated['numero_referencia'];
+            $updateData['banco_destino'] = null;
+            $updateData['numero_comprobante'] = null;
+        } elseif ($request->metodo_pago === 'transferencia') {
+            $updateData['numero_referencia'] = null;
+            $updateData['banco_destino'] = $validated['banco_destino'];
+            $updateData['numero_comprobante'] = $validated['numero_comprobante'];
+        } else {
+            $updateData['numero_referencia'] = null;
+            $updateData['banco_destino'] = null;
+            $updateData['numero_comprobante'] = null;
+        }
+
+        $reservacion->update($updateData);
+
+        // Sincronizar el estado de la habitación de inmediato
+        $reservacion->habitacion->syncStatus();
+
+        return redirect()->route('reservaciones.show', $reservacion)
+            ->with('success', 'Pago procesado y facturado con éxito. La reserva ha sido completada.');
     }
 }
 

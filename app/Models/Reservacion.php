@@ -19,6 +19,15 @@ class Reservacion extends Model
         'fecha_salida',
         'precio_total',
         'estado',
+        'metodo_pago',
+        'tipo_documento',
+        'razon_social',
+        'nrc',
+        'nit_dui',
+        'giro',
+        'numero_referencia',
+        'banco_destino',
+        'numero_comprobante',
         'notas'
     ];
 

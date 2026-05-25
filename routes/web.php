@@ -55,6 +55,7 @@ Route::middleware(['auth'])->group(function () {
     ]);
     
     Route::get('reservaciones/listado', [ReservacionController::class, 'reservations'])->name('reservaciones.listado');
+    Route::post('reservaciones/{reservacion}/procesar-pago', [ReservacionController::class, 'procesarPago'])->name('reservaciones.procesarPago');
     Route::resource('reservaciones', ReservacionController::class)->parameters([
         'reservaciones' => 'reservacion'
     ]);

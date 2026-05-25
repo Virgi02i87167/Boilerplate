@@ -31,8 +31,18 @@
                         <div class="text-xs text-gray-500">{{ $res->cliente->dui }}</div>
                     </td>
                     <td class="px-6 py-4">
-                        <span class="px-2 py-1 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded text-xs font-bold">
+                        <span class="px-2 py-1 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded text-xs font-bold block mb-1">
                             #{{ $res->habitacion->numero_habitacion }} - {{ $res->habitacion->tipo }}
+                        </span>
+                        @php
+                            $iconosPago = [
+                                'efectivo' => '💵 Efectivo',
+                                'tarjeta' => '💳 Tarjeta',
+                                'transferencia' => '🏛️ Transferencia',
+                            ];
+                        @endphp
+                        <span class="px-2 py-0.5 bg-gray-50 dark:bg-[#1C1C1B] border border-gray-100 dark:border-[#2a2a2a] text-gray-600 dark:text-gray-400 rounded text-[10px] font-semibold capitalize inline-block">
+                            {{ $iconosPago[$res->metodo_pago] ?? $res->metodo_pago }}
                         </span>
                     </td>
                     <td class="px-6 py-4 text-center text-sm dark:text-gray-300">
