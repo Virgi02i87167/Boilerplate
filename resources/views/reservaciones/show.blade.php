@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="max-w-3xl mx-auto" x-data="{ modalOpen: false, tipoDoc: 'ticket', metodoPago: 'efectivo' }">
+<div class="max-w-3xl mx-auto" x-data="{ modalOpen: false, tipoDoc: 'ticket', metodoPago: 'efectivo', total: {{ $reservacion->precio_total }}, efectivoRecibido: {{ $reservacion->precio_total }}, get cambio() { let val = parseFloat(this.efectivoRecibido) - this.total; return isNaN(val) ? '0.00' : Math.max(0, val).toFixed(2); } }">
     <div class="flex items-center justify-between mb-6">
         <h1 class="text-2xl font-bold text-gray-800 dark:text-white">Detalle de Reserva #{{ $reservacion->id }}</h1>
         <div class="flex gap-2">
@@ -11,7 +11,7 @@
                     Imprimir
                 </button>
             @else
-                <button @click="modalOpen = true" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition text-sm font-bold flex items-center gap-2 shadow-lg shadow-emerald-500/20">
+                <button @click="modalOpen = true; efectivoRecibido = total" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition text-sm font-bold flex items-center gap-2 shadow-lg shadow-emerald-500/20">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
                     Procesar Pago
                 </button>
@@ -178,6 +178,14 @@
             <form action="{{ route('reservaciones.procesarPago', $reservacion) }}" method="POST" class="space-y-4">
                 @csrf
                 
+                <!-- Total a Pagar en Modal -->
+                <div class="bg-indigo-50/50 dark:bg-indigo-950/20 border border-indigo-100/50 dark:border-indigo-900/30 rounded-2xl p-4 text-center">
+                    <div class="text-[11px] font-bold text-indigo-500 dark:text-indigo-400 uppercase tracking-widest mb-0.5">Total a Pagar</div>
+                    <div class="text-3xl font-black text-indigo-600 dark:text-indigo-400">
+                        ${{ number_format($reservacion->precio_total, 2) }}
+                    </div>
+                </div>
+                
                 <!-- Tipo de Comprobante / Tabs -->
                 <div>
                     <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Tipo de Documento</label>
@@ -246,6 +254,32 @@
                         <option value="tarjeta">💳 Tarjeta de Crédito / Débito</option>
                         <option value="transferencia">🏛️ Transferencia Bancaria</option>
                     </select>
+                </div>
+
+                <!-- Campos de Efectivo (Condicionales) -->
+                <div x-show="metodoPago === 'efectivo'" 
+                    x-transition:enter="transition ease-out duration-200"
+                    x-transition:enter-start="opacity-0 -translate-y-2"
+                    x-transition:enter-end="opacity-100 translate-y-0"
+                    class="grid grid-cols-2 gap-4">
+                    
+                    <div>
+                        <label class="block text-[11px] font-bold text-gray-500 dark:text-gray-400 mb-1">Efectivo Recibido</label>
+                        <div class="relative flex items-center">
+                            <span class="absolute left-3 text-sm text-gray-400">$</span>
+                            <input type="number" step="0.01" x-model="efectivoRecibido"
+                                class="w-full pl-7 pr-3 py-2.5 border border-gray-200 dark:border-[#3E3E3A] rounded-xl dark:bg-[#1C1C1B] dark:text-white outline-none focus:ring-2 focus:ring-indigo-500 text-sm font-bold transition">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-[11px] font-bold text-gray-500 dark:text-gray-400 mb-1">Cambio</label>
+                        <div class="relative flex items-center">
+                            <span class="absolute left-3 text-sm text-gray-400">$</span>
+                            <input type="text" :value="cambio" readonly
+                                class="w-full pl-7 pr-3 py-2.5 bg-gray-50 dark:bg-[#252524]/50 border border-gray-200 dark:border-[#3E3E3A] rounded-xl dark:text-white outline-none text-sm font-black transition">
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Campo de Rastreabilidad para Tarjeta (Condicional) -->
