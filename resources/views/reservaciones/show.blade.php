@@ -157,7 +157,8 @@
         
         <!-- Modal Card -->
         <div @click.away="modalOpen = false" 
-            class="bg-white dark:bg-[#161615] rounded-3xl border border-gray-100 dark:border-[#2a2a2a] w-full max-w-lg p-6 space-y-6 shadow-2xl overflow-y-auto max-h-[90vh]"
+            class="bg-white dark:bg-[#161615] rounded-3xl border border-gray-100 dark:border-[#2a2a2a] p-6 space-y-6 shadow-2xl overflow-y-auto max-h-[90vh]"
+            style="width: 100%; max-width: 512px;"
             x-transition:enter="transition ease-out duration-300 transform"
             x-transition:enter-start="opacity-0 scale-95 translate-y-4"
             x-transition:enter-end="opacity-100 scale-100 translate-y-0"
