@@ -86,18 +86,21 @@
 
 <style>
 @media print {
-    /* Ocultar elementos de navegación y de la app */
-    aside, header, nav, .flex.gap-2, a, button, svg, h1 {
+    /* Ocultar elementos de navegación y de la app de forma definitiva (alta especificidad) */
+    aside, header, nav, .flex.gap-2, a, button, svg, h1,
+    aside.flex, header.flex, aside.flex-col, header.flex-col {
         display: none !important;
         height: 0 !important;
         width: 0 !important;
         overflow: hidden !important;
         margin: 0 !important;
         padding: 0 !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
     }
     
     /* Reset de la estructura de la página para impresión continua */
-    html, body, #app, main, .flex, .flex-col {
+    html, body, #app, main, body > div, main > div {
         background: white !important;
         color: black !important;
         margin: 0 !important;
