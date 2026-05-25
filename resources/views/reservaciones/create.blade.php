@@ -77,48 +77,193 @@
                     @error('cliente_id') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
                 </div>
 
-                <!-- Habitación (Selección por Cards) -->
-                <div x-data="{ selectedHabitacionId: '{{ request('habitacion_id', old('habitacion_id')) }}' }">
-                    <label class="block font-bold text-gray-700 dark:text-gray-300 mb-4 text-lg">Seleccione una Habitación Disponible</label>
+                <!-- Habitación (Selección por Cards / Confirmación) -->
+                @php
+                    $preselectedId = request('habitacion_id', old('habitacion_id'));
+                    $selectedRoom = $preselectedId ? $habitaciones->firstWhere('id', $preselectedId) : null;
+                    $preciosEspeciales = $selectedRoom ? $selectedRoom->preciosTemporada
+                        ->where('fecha_fin', '>=', now()->format('Y-m-d'))
+                        ->values() : collect();
+                @endphp
+
+                <div x-data="{ selectedHabitacionId: '{{ $preselectedId }}' }">
+                    <div class="flex items-center justify-between mb-4">
+                        <label class="block font-bold text-gray-700 dark:text-gray-300 text-lg">
+                            {{ $selectedRoom ? 'Habitación Seleccionada' : 'Seleccione una Habitación Disponible' }}
+                        </label>
+                        @if($selectedRoom)
+                            <a href="{{ route('reservaciones.index') }}" class="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline">
+                                Cambiar Habitación
+                            </a>
+                        @endif
+                    </div>
                     
                     <input type="hidden" name="habitacion_id" :value="selectedHabitacionId" required>
                     
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        @forelse($habitaciones as $habitacion)
-                            <div 
-                                @click="selectedHabitacionId = '{{ $habitacion->id }}'"
-                                :class="selectedHabitacionId == '{{ $habitacion->id }}' ? 'border-indigo-500 ring-2 ring-indigo-500/20' : 'border-gray-200 dark:border-[#2a2a2a] hover:border-indigo-300'"
-                                class="cursor-pointer group bg-white dark:bg-[#1C1C1B] border rounded-2xl overflow-hidden transition-all duration-300 transform hover:-translate-y-1 shadow-sm"
-                            >
-                                <div class="relative h-32 overflow-hidden">
-                                    <img src="{{ $habitacion->ruta_imagen ? asset('storage/' . $habitacion->ruta_imagen) : asset('img/no-room.jpg') }}" 
-                                        class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
-                                    <div class="absolute top-2 right-2 px-2 py-1 bg-white/90 dark:bg-black/80 rounded-lg text-xs font-bold text-indigo-600 dark:text-indigo-400">
-                                        ${{ number_format($habitacion->precio, 2) }}
+                    <div class="grid grid-cols-1 gap-4">
+                        @if($selectedRoom)
+                            <!-- Mostrar solo la habitación preseleccionada de forma elegante y estática con carrusel -->
+                            <div class="border-2 border-indigo-500 bg-indigo-50/10 dark:bg-indigo-950/10 rounded-2xl overflow-hidden shadow-sm flex flex-col sm:flex-row h-auto min-h-[160px]">
+                                
+                                <!-- Carrusel en Reserva -->
+                                <div x-data="{ 
+                                    current: 0, 
+                                    images: [
+                                        @if($selectedRoom->ruta_imagen)
+                                            '{{ asset('storage/' . $selectedRoom->ruta_imagen) }}'
+                                        @else
+                                            '{{ asset('img/no-room.jpg') }}'
+                                        @endif
+                                        @if($selectedRoom->imagenes->isNotEmpty())
+                                            @foreach($selectedRoom->imagenes as $img)
+                                                , '{{ asset('storage/' . $img->ruta_imagen) }}'
+                                            @endforeach
+                                        @endif
+                                    ]
+                                }" class="relative w-full sm:w-56 h-40 sm:h-auto shrink-0 overflow-hidden group">
+                                    
+                                    <!-- Contenedor de Imagen -->
+                                    <div class="w-full h-full relative">
+                                        <template x-for="(img, idx) in images" :key="idx">
+                                            <img 
+                                                :src="img" 
+                                                x-show="current === idx"
+                                                x-transition:enter="transition ease-out duration-300"
+                                                x-transition:enter-start="opacity-0 scale-95"
+                                                x-transition:enter-end="opacity-100 scale-100"
+                                                class="absolute inset-0 w-full h-full object-cover"
+                                            >
+                                        </template>
                                     </div>
-                                    <div class="absolute bottom-2 left-2 px-2 py-1 bg-indigo-600 rounded-lg text-[10px] font-bold text-white uppercase">
-                                        {{ $habitacion->tipo }}
+
+                                    <div class="absolute top-2 left-2 px-2 py-1 bg-indigo-600 rounded-lg text-[10px] font-bold text-white uppercase z-10">
+                                        {{ $selectedRoom->tipo }}
+                                    </div>
+
+                                    <!-- Controles del Carrusel (Flechas en Hover) -->
+                                    <template x-if="images.length > 1">
+                                        <div>
+                                            <!-- Botón Anterior (Izquierda) -->
+                                            <button 
+                                                type="button"
+                                                x-show="current > 0"
+                                                @click.stop.prevent="current--"
+                                                class="absolute left-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-white/90 dark:bg-[#161615]/90 border border-[#e3e3e0] dark:border-[#3E3E3A] flex items-center justify-center text-gray-800 dark:text-white shadow hover:scale-105 transition-all opacity-0 group-hover:opacity-100 duration-200 z-10"
+                                            >
+                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"></path>
+                                                </svg>
+                                            </button>
+                                            
+                                            <!-- Botón Siguiente (Derecha) -->
+                                            <button 
+                                                type="button"
+                                                x-show="current < images.length - 1"
+                                                @click.stop.prevent="current++"
+                                                class="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-white/90 dark:bg-[#161615]/90 border border-[#e3e3e0] dark:border-[#3E3E3A] flex items-center justify-center text-gray-800 dark:text-white shadow hover:scale-105 transition-all opacity-0 group-hover:opacity-100 duration-200 z-10"
+                                            >
+                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path>
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    </template>
+
+                                    <!-- Puntos Indicadores (Dots) -->
+                                    <template x-if="images.length > 1">
+                                        <div class="absolute bottom-2 left-1/2 -translate-x-1/2 flex items-center gap-1 z-10 bg-black/35 px-2 py-0.5 rounded-full backdrop-blur-[2px]">
+                                            <template x-for="(img, idx) in images" :key="idx">
+                                                <span 
+                                                    :class="current === idx ? 'bg-white scale-110' : 'bg-white/50'"
+                                                    class="w-1 h-1 rounded-full transition-all duration-200"
+                                                ></span>
+                                            </template>
+                                        </div>
+                                    </template>
+
+                                </div>
+
+                                <!-- Detalles de la habitación preseleccionada -->
+                                <div class="p-4 flex-1 flex flex-col justify-between">
+                                    <div>
+                                        <div class="flex items-start justify-between gap-4">
+                                            <div>
+                                                <h4 class="font-bold text-gray-900 dark:text-white text-lg">Habitación #{{ $selectedRoom->numero_habitacion }}</h4>
+                                                <p class="text-xs text-gray-500 dark:text-gray-400 font-medium leading-relaxed line-clamp-1 mt-0.5">
+                                                    {{ $selectedRoom->descripcion ?? 'Disfrute de una estancia placentera con todas las comodidades.' }}
+                                                </p>
+                                            </div>
+                                            <div class="text-right">
+                                                <span class="text-xs text-gray-400 dark:text-gray-500 block uppercase font-bold tracking-wider">Precio Base</span>
+                                                <span class="text-lg font-black text-indigo-600 dark:text-indigo-400">${{ number_format($selectedRoom->precio, 2) }} <span class="text-xs font-normal text-gray-500">noche</span></span>
+                                            </div>
+                                        </div>
+
+                                        <!-- Tarifas de Temporada Especiales -->
+                                        @if($preciosEspeciales->isNotEmpty())
+                                            <div class="mt-3 p-3 bg-red-50/50 dark:bg-red-950/10 border border-red-100 dark:border-red-900/30 rounded-xl">
+                                                <span class="text-[10px] font-bold text-[#E25C3E] dark:text-[#F38A75] uppercase tracking-wider block mb-1.5 flex items-center gap-1">
+                                                    <span>🔥</span> Tarifas Especiales Configuradas:
+                                                </span>
+                                                <div class="space-y-1">
+                                                    @foreach($preciosEspeciales as $precioEsp)
+                                                        <div class="flex items-center justify-between text-xs text-gray-700 dark:text-gray-300">
+                                                            <div class="flex items-center gap-1.5">
+                                                                <span class="w-1.5 h-1.5 rounded-full bg-[#E25C3E]"></span>
+                                                                <span class="font-bold text-[#E25C3E] dark:text-[#F38A75]">{{ $precioEsp->descripcion }}</span>
+                                                                <span class="text-gray-400 dark:text-[#6E6E6A]">({{ $precioEsp->fecha_inicio->format('d/m') }} al {{ $precioEsp->fecha_fin->format('d/m') }})</span>
+                                                            </div>
+                                                            <span class="font-extrabold text-gray-900 dark:text-white">${{ number_format($precioEsp->precio, 2) }} / noche</span>
+                                                        </div>
+                                                    @endforeach
+                                                </div>
+                                            </div>
+                                        @endif
+                                    </div>
+                                    <div class="text-[10px] text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wider mt-3 sm:mt-2">
+                                        Confirmada para Reserva Inmediata
                                     </div>
                                 </div>
-                                <div class="p-3">
-                                    <div class="flex items-center justify-between">
-                                        <h4 class="font-bold text-gray-900 dark:text-white">Habitación #{{ $habitacion->numero_habitacion }}</h4>
-                                        <div x-show="selectedHabitacionId == '{{ $habitacion->id }}'" class="text-indigo-500">
-                                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                                            </svg>
+
+                            </div>
+                        @else
+                            <!-- Mostrar listado completo si no hay preselección -->
+                            @forelse($habitaciones as $habitacion)
+                                <div 
+                                    @click="selectedHabitacionId = '{{ $habitacion->id }}'"
+                                    :class="selectedHabitacionId == '{{ $habitacion->id }}' ? 'border-indigo-500 ring-2 ring-indigo-500/20' : 'border-gray-200 dark:border-[#2a2a2a] hover:border-indigo-300'"
+                                    class="cursor-pointer group bg-white dark:bg-[#1C1C1B] border rounded-2xl overflow-hidden transition-all duration-300 transform hover:-translate-y-1 shadow-sm"
+                                >
+                                    <div class="relative h-32 overflow-hidden">
+                                        <img src="{{ $habitacion->ruta_imagen ? asset('storage/' . $habitacion->ruta_imagen) : asset('img/no-room.jpg') }}" 
+                                            class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                                        <div class="absolute top-2 right-2 px-2 py-1 bg-white/90 dark:bg-black/80 rounded-lg text-xs font-bold text-indigo-600 dark:text-indigo-400">
+                                            ${{ number_format($habitacion->precio, 2) }}
+                                        </div>
+                                        <div class="absolute bottom-2 left-2 px-2 py-1 bg-indigo-600 rounded-lg text-[10px] font-bold text-white uppercase">
+                                            {{ $habitacion->tipo }}
                                         </div>
                                     </div>
-                                    <p class="text-[10px] text-gray-500 dark:text-gray-400 line-clamp-1 mt-1">
-                                        {{ $habitacion->descripcion ?? 'Sin descripción disponible.' }}
-                                    </p>
+                                    <div class="p-3">
+                                        <div class="flex items-center justify-between">
+                                            <h4 class="font-bold text-gray-900 dark:text-white">Habitación #{{ $habitacion->numero_habitacion }}</h4>
+                                            <div x-show="selectedHabitacionId == '{{ $habitacion->id }}'" class="text-indigo-500">
+                                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                                                </svg>
+                                            </div>
+                                        </div>
+                                        <p class="text-[10px] text-gray-500 dark:text-gray-400 line-clamp-1 mt-1">
+                                            {{ $habitacion->descripcion ?? 'Sin descripción disponible.' }}
+                                        </p>
+                                    </div>
                                 </div>
-                            </div>
-                        @empty
-                            <div class="col-span-full p-8 text-center bg-gray-50 dark:bg-[#1C1C1B] rounded-2xl border-2 border-dashed border-gray-200 dark:border-[#2a2a2a]">
-                                <p class="text-gray-500">No hay habitaciones disponibles en este momento.</p>
-                            </div>
-                        @endforelse
+                            @empty
+                                <div class="col-span-full p-8 text-center bg-gray-50 dark:bg-[#1C1C1B] rounded-2xl border-2 border-dashed border-gray-200 dark:border-[#2a2a2a]">
+                                    <p class="text-gray-500">No hay habitaciones disponibles en este momento.</p>
+                                </div>
+                            @endforelse
+                        @endif
                     </div>
                     @error('habitacion_id') <p class="text-red-500 text-xs mt-2">{{ $message }}</p> @enderror
                 </div>

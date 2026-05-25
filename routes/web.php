@@ -47,11 +47,17 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('clientes', \App\Http\Controllers\ClienteController::class);
 
     // Gestión de habitaciones
-    Route::resource('habitaciones', HabitacionController::class);
-    Route::resource('precios-temporada', PrecioTemporadaController::class);
+    Route::delete('habitaciones/{habitacion}/imagen-principal', [HabitacionController::class, 'destroyMainImagen'])->name('habitaciones.destroyMainImagen');
+    Route::delete('habitaciones-imagenes/{imagen}', [HabitacionController::class, 'destroyAdditionalImagen'])->name('habitaciones.destroyAdditionalImagen');
+    Route::resource('habitaciones', HabitacionController::class)->parameters(['habitaciones' => 'habitacion']);
+    Route::resource('precios-temporada', PrecioTemporadaController::class)->parameters([
+        'precios-temporada' => 'precioTemporada'
+    ]);
     
     Route::get('reservaciones/listado', [ReservacionController::class, 'reservations'])->name('reservaciones.listado');
-    Route::resource('reservaciones', ReservacionController::class);
+    Route::resource('reservaciones', ReservacionController::class)->parameters([
+        'reservaciones' => 'reservacion'
+    ]);
 });
 
 

@@ -29,7 +29,7 @@ class ReservacionController extends Controller
     public function create()
     {
         Gate::authorize('gestionar-reservaciones');
-        $habitaciones = Habitacion::where('estado', 'disponible')->with('imagenes')->get();
+        $habitaciones = Habitacion::where('estado', 'disponible')->with(['imagenes', 'preciosTemporada'])->get();
         $clientes = Cliente::all();
         return view('reservaciones.create', compact('habitaciones', 'clientes'));
     }

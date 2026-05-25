@@ -58,7 +58,7 @@
                     <td class="px-6 py-4 text-right">
                         <div class="flex items-center justify-end gap-3 text-sm">
                             <a href="{{ route('reservaciones.show', $res) }}" class="text-indigo-500 hover:text-indigo-700 font-medium">Detalles</a>
-                            <form action="{{ route('reservaciones.destroy', $res) }}" method="POST" onsubmit="return confirm('¿Eliminar reserva?');">
+                             <form action="{{ route('reservaciones.destroy', $res) }}" method="POST" class="inline confirm-form" data-confirm="¿Eliminar reserva?" data-confirm-subtitle="Esta acción cancelará y eliminará permanentemente la reserva.">
                                 @csrf @method('DELETE')
                                 <button type="submit" class="text-red-400 hover:text-red-600">Eliminar</button>
                             </form>

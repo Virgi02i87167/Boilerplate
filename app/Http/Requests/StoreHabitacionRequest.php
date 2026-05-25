@@ -22,7 +22,7 @@ class StoreHabitacionRequest extends FormRequest
             'precio' => 'required|numeric|min:0',
             'descripcion' => 'nullable|string',
             'imagenes' => 'nullable|array',
-            'imagenes.*' => 'image|max:2048',
+            'imagenes.*' => 'image|max:10240',
         ];
     }
 
@@ -32,6 +32,8 @@ class StoreHabitacionRequest extends FormRequest
             'numero_habitacion.unique' => 'Este número de habitación ya está registrado',
             'numero_habitacion.required' => 'El número de habitación es obligatorio',
             'precio.required' => 'El precio es obligatorio',
+            'imagenes.*.image' => 'Cada archivo seleccionado debe ser una imagen válida (jpeg, png, webp, etc.)',
+            'imagenes.*.max' => 'Las imágenes de la habitación no deben pesar más de 10 MB cada una',
         ];
     }
 }

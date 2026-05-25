@@ -34,8 +34,8 @@
                                 @endcan
                                 @can('gestionar-roles')
                                     @if($role->name !== 'Admin')
-                                        <form action="{{ route('roles.destroy', $role) }}" method="POST" class="inline"
-                                            onsubmit="return confirm('¿Eliminar este rol?');">
+                                        <form action="{{ route('roles.destroy', $role) }}" method="POST" class="inline confirm-form"
+                                            data-confirm="¿Eliminar este rol?" data-confirm-subtitle="Esta acción puede afectar a los usuarios asignados a este rol y no se puede deshacer.">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit"

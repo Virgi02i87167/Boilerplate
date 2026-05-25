@@ -25,7 +25,7 @@ class UpdateHabitacionRequest extends FormRequest
             'disponible_desde' => 'nullable|date',
             'descripcion' => 'nullable|string',
             'imagenes' => 'nullable|array',
-            'imagenes.*' => 'image|max:2048',
+            'imagenes.*' => 'image|max:10240',
         ];
     }
 
@@ -33,6 +33,8 @@ class UpdateHabitacionRequest extends FormRequest
     {
         return [
             'numero_habitacion.unique' => 'Este número de habitación ya está en uso',
+            'imagenes.*.image' => 'Cada archivo seleccionado debe ser una imagen válida (jpeg, png, webp, etc.)',
+            'imagenes.*.max' => 'Las imágenes de la habitación no deben pesar más de 10 MB cada una',
         ];
     }
 }

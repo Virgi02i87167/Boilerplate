@@ -35,7 +35,7 @@
                     <td class="px-6 py-4 text-right">
                         <div class="flex items-center justify-end gap-2">
                             <a href="{{ route('precios-temporada.edit', $precio) }}" class="text-blue-500 hover:text-blue-700">Editar</a>
-                            <form action="{{ route('precios-temporada.destroy', $precio) }}" method="POST" onsubmit="return confirm('¿Borrar?');">
+                            <form action="{{ route('precios-temporada.destroy', $precio) }}" method="POST" class="inline confirm-form" data-confirm="¿Borrar este precio de temporada?" data-confirm-subtitle="Esta acción eliminará el precio configurado de forma permanente.">
                                 @csrf @method('DELETE')
                                 <button type="submit" class="text-red-500 hover:text-red-700">Eliminar</button>
                             </form>

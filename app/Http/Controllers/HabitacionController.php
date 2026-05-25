@@ -70,10 +70,27 @@ class HabitacionController extends Controller
         
         $habitacion->update($data);
 
+        // Subir nuevas imágenes
         if ($request->hasFile('imagenes')) {
-            foreach ($request->file('imagenes') as $imagen) {
+            foreach ($request->file('imagenes') as $index => $imagen) {
                 $ruta = $imagen->store('habitaciones', 'public');
-                $habitacion->imagenes()->create(['ruta_imagen' => $ruta]);
+                
+                // Si la habitación no tiene imagen principal, la primera subida se asigna como principal
+                if (!$habitacion->ruta_imagen && $index === 0) {
+                    $habitacion->update(['ruta_imagen' => $ruta]);
+                } else {
+                    $habitacion->imagenes()->create(['ruta_imagen' => $ruta]);
+                }
+            }
+        }
+
+        // Autopromoción: Si la imagen principal sigue siendo nula pero hay imágenes en la galería,
+        // promovemos la primera de la galería como principal.
+        if (!$habitacion->ruta_imagen) {
+            $siguiente = $habitacion->imagenes()->first();
+            if ($siguiente) {
+                $habitacion->update(['ruta_imagen' => $siguiente->ruta_imagen]);
+                $siguiente->delete();
             }
         }
 
@@ -86,9 +103,64 @@ class HabitacionController extends Controller
     {
         Gate::authorize('gestionar-habitaciones');
 
+        // Eliminar imagen principal físicamente
+        if ($habitacion->ruta_imagen) {
+            if (\Illuminate\Support\Facades\Storage::disk('public')->exists($habitacion->ruta_imagen)) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($habitacion->ruta_imagen);
+            }
+        }
+
+        // Eliminar imágenes adicionales físicamente
+        foreach ($habitacion->imagenes as $img) {
+            if ($img->ruta_imagen) {
+                if (\Illuminate\Support\Facades\Storage::disk('public')->exists($img->ruta_imagen)) {
+                    \Illuminate\Support\Facades\Storage::disk('public')->delete($img->ruta_imagen);
+                }
+            }
+        }
+
         $habitacion->delete();
 
         return redirect()->route('habitaciones.index')
             ->with('success', 'Habitación eliminada correctamente');
+    }
+
+    // ELIMINAR IMAGEN PRINCIPAL (AJAX)
+    public function destroyMainImagen(Habitacion $habitacion)
+    {
+        Gate::authorize('gestionar-habitaciones');
+
+        if ($habitacion->ruta_imagen) {
+            if (\Illuminate\Support\Facades\Storage::disk('public')->exists($habitacion->ruta_imagen)) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($habitacion->ruta_imagen);
+            }
+
+            // Buscar si hay otra imagen para promocionar
+            $siguiente = $habitacion->imagenes()->first();
+            if ($siguiente) {
+                $habitacion->update(['ruta_imagen' => $siguiente->ruta_imagen]);
+                $siguiente->delete();
+            } else {
+                $habitacion->update(['ruta_imagen' => null]);
+            }
+        }
+
+        return response()->json(['success' => true]);
+    }
+
+    // ELIMINAR IMAGEN ADICIONAL (AJAX)
+    public function destroyAdditionalImagen(ImagenHabitacion $imagen)
+    {
+        Gate::authorize('gestionar-habitaciones');
+
+        if ($imagen->ruta_imagen) {
+            if (\Illuminate\Support\Facades\Storage::disk('public')->exists($imagen->ruta_imagen)) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($imagen->ruta_imagen);
+            }
+        }
+
+        $imagen->delete();
+
+        return response()->json(['success' => true]);
     }
 }

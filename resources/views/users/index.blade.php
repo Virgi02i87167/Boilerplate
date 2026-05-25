@@ -89,8 +89,7 @@
                                     @endcan
                                     @can('eliminar-cuenta')
                                         <form action="{{ route('users.destroy', $user) }}" method="POST"
-                                            onsubmit="return confirm('¿Estás seguro de que deseas desactivar este usuario?');"
-                                            class="inline">
+                                            class="inline confirm-form" data-confirm="¿Desactivar usuario?" data-confirm-subtitle="Este usuario ya no podrá iniciar sesión en la plataforma.">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit"

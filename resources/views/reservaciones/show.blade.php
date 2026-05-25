@@ -13,7 +13,7 @@
         </div>
     </div>
 
-    <div class="bg-white dark:bg-[#161615] rounded-3xl shadow-xl overflow-hidden border border-gray-100 dark:border-[#2a2a2a]">
+    <div id="ticket-imprimible" class="bg-white dark:bg-[#161615] rounded-3xl shadow-xl overflow-hidden border border-gray-100 dark:border-[#2a2a2a]">
         <!-- ENCABEZADO TICKET -->
         <div class="bg-indigo-600 p-8 text-white flex justify-between items-start">
             <div>
@@ -86,10 +86,216 @@
 
 <style>
 @media print {
-    body * { visibility: hidden; }
-    .max-w-3xl, .max-w-3xl * { visibility: visible; }
-    .max-w-3xl { position: absolute; left: 0; top: 0; width: 100%; }
-    .px-4, .px-6, a, button { display: none !important; }
+    /* Ocultar elementos de navegación y de la app */
+    aside, header, nav, .flex.gap-2, a, button, svg, h1 {
+        display: none !important;
+        height: 0 !important;
+        width: 0 !important;
+        overflow: hidden !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    
+    /* Reset de la estructura de la página para impresión continua */
+    html, body, #app, main, .flex, .flex-col {
+        background: white !important;
+        color: black !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        height: auto !important;
+        min-height: 0 !important;
+        max-height: none !important;
+        overflow: visible !important;
+        display: block !important;
+        width: 100% !important;
+    }
+
+    /* Contenedor principal del ticket */
+    #ticket-imprimible {
+        background: white !important;
+        color: black !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 4px !important;
+        box-shadow: none !important;
+        border: none !important;
+        border-radius: 0 !important;
+        display: block !important;
+        font-family: 'Courier New', Courier, monospace !important;
+        font-size: 11px !important;
+        line-height: 1.3 !important;
+    }
+
+    /* Forzar que todos los textos del ticket sean negros y sin fondo */
+    #ticket-imprimible * {
+        color: black !important;
+        background-color: transparent !important;
+        box-shadow: none !important;
+        text-shadow: none !important;
+        font-family: 'Courier New', Courier, monospace !important;
+    }
+
+    /* Cabecera del ticket */
+    #ticket-imprimible .bg-indigo-600 {
+        border-bottom: 2px dashed black !important;
+        padding: 8px 0 !important;
+        margin-bottom: 12px !important;
+        text-align: center !important;
+        display: block !important;
+        width: 100% !important;
+    }
+
+    #ticket-imprimible .text-3xl {
+        font-size: 15px !important;
+        font-weight: bold !important;
+        letter-spacing: 1px !important;
+        text-align: center !important;
+        display: block !important;
+        margin-bottom: 2px !important;
+    }
+
+    #ticket-imprimible .text-xl {
+        font-size: 12px !important;
+        font-weight: bold !important;
+        text-align: center !important;
+        display: block !important;
+        margin-bottom: 2px !important;
+    }
+
+    #ticket-imprimible .text-right, 
+    #ticket-imprimible .opacity-80, 
+    #ticket-imprimible .text-xs {
+        text-align: center !important;
+        float: none !important;
+        font-size: 9px !important;
+        display: block !important;
+        margin: 0 !important;
+    }
+
+    /* Cuerpo del ticket y espaciados */
+    #ticket-imprimible .p-8, 
+    #ticket-imprimible .p-6 {
+        padding: 6px 2px !important;
+    }
+
+    #ticket-imprimible .space-y-8 > * + * {
+        margin-top: 10px !important;
+    }
+
+    /* Grid de datos Cliente/Habitación a flujo vertical */
+    #ticket-imprimible .grid-cols-2 {
+        display: block !important;
+        width: 100% !important;
+        border-bottom: 1px dashed black !important;
+        padding-bottom: 8px !important;
+        margin-bottom: 8px !important;
+    }
+
+    #ticket-imprimible .grid-cols-2 > div {
+        display: block !important;
+        width: 100% !important;
+        margin-bottom: 8px !important;
+    }
+
+    #ticket-imprimible .grid-cols-2 > div:last-child {
+        margin-bottom: 0 !important;
+    }
+
+    #ticket-imprimible h3 {
+        font-size: 9px !important;
+        font-weight: bold !important;
+        margin-bottom: 2px !important;
+        text-transform: uppercase !important;
+    }
+
+    #ticket-imprimible .text-lg {
+        font-size: 11px !important;
+        font-weight: bold !important;
+    }
+
+    #ticket-imprimible .text-sm {
+        font-size: 10px !important;
+    }
+
+    /* Fechas alineadas verticalmente sin columnas ni iconos */
+    #ticket-imprimible .grid-cols-3 {
+        display: block !important;
+        width: 100% !important;
+        border-bottom: 1px dashed black !important;
+        padding: 6px 0 !important;
+        margin-bottom: 8px !important;
+    }
+
+    #ticket-imprimible .grid-cols-3 > div {
+        display: block !important;
+        width: 100% !important;
+        text-align: left !important;
+        margin-bottom: 4px !important;
+    }
+
+    #ticket-imprimible .grid-cols-3 > div:nth-child(2) {
+        display: none !important;
+    }
+
+    #ticket-imprimible .grid-cols-3 .text-xs {
+        font-size: 9px !important;
+        font-weight: bold !important;
+        display: inline !important;
+    }
+
+    #ticket-imprimible .grid-cols-3 .text-xs::after {
+        content: ": " !important;
+    }
+
+    #ticket-imprimible .grid-cols-3 .text-lg {
+        font-size: 11px !important;
+        display: inline !important;
+        font-weight: normal !important;
+    }
+
+    /* Caja de Total a Pagar */
+    #ticket-imprimible .bg-indigo-50, 
+    #ticket-imprimible .dark\:bg-indigo-900\/20, 
+    #ticket-imprimible .border-indigo-100 {
+        border: 1px dashed black !important;
+        padding: 6px !important;
+        margin-top: 10px !important;
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        flex-direction: row !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    #ticket-imprimible .text-indigo-600 {
+        font-size: 10px !important;
+        font-weight: bold !important;
+    }
+
+    #ticket-imprimible .text-4xl {
+        font-size: 14px !important;
+        font-weight: bold !important;
+    }
+
+    /* Sección de Notas */
+    #ticket-imprimible .italic {
+        font-size: 10px !important;
+        margin-top: 4px !important;
+    }
+
+    /* Footer del ticket */
+    #ticket-imprimible .bg-gray-50, 
+    #ticket-imprimible .dark\:bg-\[\#1C1C1B\] {
+        border-top: 2px dashed black !important;
+        padding: 8px 0 !important;
+        margin-top: 12px !important;
+        font-size: 8px !important;
+        text-align: center !important;
+        display: block !important;
+        width: 100% !important;
+    }
 }
 </style>
 @endsection

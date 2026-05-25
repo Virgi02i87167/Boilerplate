@@ -90,7 +90,7 @@
 
                         <!-- Eliminar -->
                         <form action="{{ route('habitaciones.destroy', $habitacion) }}" method="POST"
-                            onsubmit="return confirm('¿Eliminar habitación?')">
+                            class="confirm-form" data-confirm="¿Eliminar habitación?" data-confirm-subtitle="Se eliminarán los registros relacionados con esta habitación y no se podrá deshacer.">
                             @csrf
                             @method('DELETE')
 
