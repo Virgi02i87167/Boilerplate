@@ -183,5 +183,37 @@ class ReservacionController extends Controller
         return redirect()->route('reservaciones.show', $reservacion)
             ->with('success', 'Pago procesado y facturado con éxito. La reserva ha sido completada.');
     }
+
+    public function cotizar(Request $request)
+    {
+        $request->validate([
+            'habitacion_id' => 'required|exists:habitaciones,id',
+            'fecha_entrada' => 'required|date',
+            'fecha_salida' => 'required|date|after:fecha_entrada',
+        ]);
+
+        try {
+            $total = Reservacion::calculateTotal(
+                $request->habitacion_id,
+                $request->fecha_entrada,
+                $request->fecha_salida
+            );
+
+            $entrada = \Carbon\Carbon::parse($request->fecha_entrada);
+            $salida = \Carbon\Carbon::parse($request->fecha_salida);
+            $noches = $entrada->diffInDays($salida);
+
+            return response()->json([
+                'success' => true,
+                'total' => $total,
+                'noches' => $noches,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 422);
+        }
+    }
 }
 

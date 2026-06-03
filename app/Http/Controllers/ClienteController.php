@@ -47,7 +47,11 @@ class ClienteController extends Controller
     public function destroy(Cliente $cliente)
     {
         Gate::authorize('gestionar-clientes');
-        $cliente->delete();
-        return redirect()->route('clientes.index')->with('success', 'Cliente eliminado exitosamente.');
+        try {
+            $cliente->delete();
+            return redirect()->route('clientes.index')->with('success', 'Cliente eliminado exitosamente.');
+        } catch (\Illuminate\Database\QueryException $e) {
+            return redirect()->route('clientes.index')->with('error', 'No se puede eliminar el cliente porque tiene reservaciones registradas.');
+        }
     }
 }

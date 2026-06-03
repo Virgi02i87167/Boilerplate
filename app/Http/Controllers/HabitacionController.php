@@ -103,6 +103,11 @@ class HabitacionController extends Controller
     {
         Gate::authorize('gestionar-habitaciones');
 
+        if ($habitacion->reservaciones()->exists()) {
+            return redirect()->route('habitaciones.index')
+                ->with('error', 'No se puede eliminar la habitación porque tiene reservaciones registradas.');
+        }
+
         // Eliminar imagen principal físicamente
         if ($habitacion->ruta_imagen) {
             if (\Illuminate\Support\Facades\Storage::disk('public')->exists($habitacion->ruta_imagen)) {

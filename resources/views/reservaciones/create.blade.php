@@ -11,7 +11,62 @@
         <h1 class="text-2xl font-bold text-gray-800 dark:text-white">Nueva Reservación</h1>
     </div>
 
-    <form action="{{ route('reservaciones.store') }}" method="POST" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <form action="{{ route('reservaciones.store') }}" method="POST"
+        x-data="{
+            habitacionId: '{{ $preselectedId }}',
+            fechaEntrada: '{{ old('fecha_entrada', date('Y-m-d')) }}',
+            fechaSalida: '{{ old('fecha_salida', date('Y-m-d', strtotime('+1 day'))) }}',
+            total: 0,
+            noches: 0,
+            loading: false,
+            cotizarUrl: '{{ route('reservaciones.cotizar') }}',
+            
+            calcularTotal() {
+                if (!this.habitacionId || !this.fechaEntrada || !this.fechaSalida) {
+                    this.total = 0;
+                    this.noches = 0;
+                    return;
+                }
+                
+                if (this.fechaEntrada >= this.fechaSalida) {
+                    this.total = 0;
+                    this.noches = 0;
+                    return;
+                }
+
+                this.loading = true;
+                
+                let url = `${this.cotizarUrl}?habitacion_id=${this.habitacionId}&fecha_entrada=${this.fechaEntrada}&fecha_salida=${this.fechaSalida}`;
+                
+                fetch(url)
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            this.total = data.total;
+                            this.noches = data.noches;
+                        } else {
+                            this.total = 0;
+                            this.noches = 0;
+                        }
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        this.total = 0;
+                        this.noches = 0;
+                    })
+                    .finally(() => {
+                        this.loading = false;
+                    });
+            },
+            init() {
+                this.calcularTotal();
+                this.$watch('habitacionId', () => this.calcularTotal());
+                this.$watch('fechaEntrada', () => this.calcularTotal());
+                this.$watch('fechaSalida', () => this.calcularTotal());
+            }
+        }"
+        class="grid grid-cols-1 md:grid-cols-3 gap-6"
+    >
         @csrf
 
         <!-- COLUMNA IZQUIERDA: DATOS -->
@@ -86,7 +141,7 @@
                         ->values() : collect();
                 @endphp
 
-                <div x-data="{ selectedHabitacionId: '{{ $preselectedId }}' }">
+                <div>
                     <div class="flex items-center justify-between mb-4">
                         <label class="block font-bold text-gray-700 dark:text-gray-300 text-lg">
                             {{ $selectedRoom ? 'Habitación Seleccionada' : 'Seleccione una Habitación Disponible' }}
@@ -98,7 +153,7 @@
                         @endif
                     </div>
                     
-                    <input type="hidden" name="habitacion_id" :value="selectedHabitacionId" required>
+                    <input type="hidden" name="habitacion_id" :value="habitacionId" required>
                     
                     <div class="grid grid-cols-1 gap-4">
                         @if($selectedRoom)
@@ -230,8 +285,8 @@
                             <!-- Mostrar listado completo si no hay preselección -->
                             @forelse($habitaciones as $habitacion)
                                 <div 
-                                    @click="selectedHabitacionId = '{{ $habitacion->id }}'"
-                                    :class="selectedHabitacionId == '{{ $habitacion->id }}' ? 'border-indigo-500 ring-2 ring-indigo-500/20' : 'border-gray-200 dark:border-[#2a2a2a] hover:border-indigo-300'"
+                                    @click="habitacionId = '{{ $habitacion->id }}'"
+                                    :class="habitacionId == '{{ $habitacion->id }}' ? 'border-indigo-500 ring-2 ring-indigo-500/20' : 'border-gray-200 dark:border-[#2a2a2a] hover:border-indigo-300'"
                                     class="cursor-pointer group bg-white dark:bg-[#1C1C1B] border rounded-2xl overflow-hidden transition-all duration-300 transform hover:-translate-y-1 shadow-sm"
                                 >
                                     <div class="relative h-32 overflow-hidden">
@@ -247,7 +302,7 @@
                                     <div class="p-3">
                                         <div class="flex items-center justify-between">
                                             <h4 class="font-bold text-gray-900 dark:text-white">Habitación #{{ $habitacion->numero_habitacion }}</h4>
-                                            <div x-show="selectedHabitacionId == '{{ $habitacion->id }}'" class="text-indigo-500">
+                                            <div x-show="habitacionId == '{{ $habitacion->id }}'" class="text-indigo-500">
                                                 <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                                                     <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
                                                 </svg>
@@ -272,12 +327,12 @@
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block font-bold text-gray-700 dark:text-gray-300 mb-2">Registro</label>
-                        <input type="date" name="fecha_entrada" value="{{ old('fecha_entrada', date('Y-m-d')) }}" required
+                        <input type="date" name="fecha_entrada" x-model="fechaEntrada" required
                             class="w-full p-2.5 border rounded-xl dark:bg-[#1C1C1B] dark:border-[#3E3E3A] dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none transition">
                     </div>
                     <div>
                         <label class="block font-bold text-gray-700 dark:text-gray-300 mb-2">Salida</label>
-                        <input type="date" name="fecha_salida" value="{{ old('fecha_salida', date('Y-m-d', strtotime('+1 day'))) }}" required
+                        <input type="date" name="fecha_salida" x-model="fechaSalida" required
                             class="w-full p-2.5 border rounded-xl dark:bg-[#1C1C1B] dark:border-[#3E3E3A] dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none transition">
                     </div>
                 </div>
@@ -306,10 +361,28 @@
         <div class="space-y-6">
             <div class="bg-indigo-600 rounded-2xl shadow-lg p-6 text-white space-y-4">
                 <h3 class="font-bold text-lg border-b border-indigo-400 pb-2">Resumen de Reserva</h3>
-                <div class="space-y-2 text-sm opacity-90">
-                    <p>• Los precios se calculan automáticamente incluyendo temporadas.</p>
-                    <p>• El total se verá en la confirmación final.</p>
+                
+                <div class="space-y-3 text-sm">
+                    <div x-show="loading" class="animate-pulse space-y-2 py-2">
+                        <div class="h-4 bg-indigo-500/50 rounded w-3/4"></div>
+                        <div class="h-6 bg-indigo-500/50 rounded w-1/2"></div>
+                    </div>
+                    <div x-show="!loading && total > 0" class="divide-y divide-indigo-400/30">
+                        <div class="pb-2 flex justify-between items-center">
+                            <span class="opacity-80">Noches:</span>
+                            <span class="font-bold text-base" x-text="noches"></span>
+                        </div>
+                        <div class="pt-2 flex justify-between items-end">
+                            <span class="opacity-80">Total Estimado:</span>
+                            <span class="text-2xl font-black text-white" x-text="'$' + parseFloat(total).toFixed(2)"></span>
+                        </div>
+                    </div>
+                    <div x-show="!loading && !total" class="opacity-80 space-y-1.5">
+                        <p>• Selecciona habitación y fechas válidas.</p>
+                        <p>• Las tarifas por temporada se aplicarán automáticamente.</p>
+                    </div>
                 </div>
+
                 <button type="submit" class="w-full py-3 bg-white text-indigo-600 rounded-xl font-bold uppercase tracking-wider hover:bg-gray-100 transition shadow-md">
                     Confirmar Reserva
                 </button>
@@ -319,7 +392,6 @@
                 <p>⚠️ Asegúrese de que las fechas sean correctas. El sistema validará si la habitación ya está ocupada.</p>
             </div>
         </div>
-
     </form>
 </div>
 @endsection

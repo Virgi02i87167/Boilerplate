@@ -24,9 +24,8 @@ Route::get('/dashboard', function () {
     $totalClientes = Cliente::count();
     
     $tasaOcupacion = $totalHabitaciones > 0 ? ($habitacionesOcupadas / $totalHabitaciones) * 100 : 0;
-    $habitaciones = Habitacion::with('imagenes')->get();
 
-    return view('dashboard', compact('totalHabitaciones', 'habitacionesDisponibles', 'habitacionesOcupadas', 'totalClientes', 'tasaOcupacion', 'habitaciones'));
+    return view('dashboard', compact('totalHabitaciones', 'habitacionesDisponibles', 'habitacionesOcupadas', 'totalClientes', 'tasaOcupacion'));
 })->middleware(['auth', 'can:acceder-dashboard'])->name('dashboard');
 
 // Perfil
@@ -55,6 +54,7 @@ Route::middleware(['auth'])->group(function () {
     ]);
     
     Route::get('reservaciones/listado', [ReservacionController::class, 'reservations'])->name('reservaciones.listado');
+    Route::get('reservaciones/cotizar', [ReservacionController::class, 'cotizar'])->name('reservaciones.cotizar');
     Route::post('reservaciones/{reservacion}/procesar-pago', [ReservacionController::class, 'procesarPago'])->name('reservaciones.procesarPago');
     Route::resource('reservaciones', ReservacionController::class)->parameters([
         'reservaciones' => 'reservacion'
