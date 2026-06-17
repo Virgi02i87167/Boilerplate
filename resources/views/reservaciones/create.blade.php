@@ -11,6 +11,14 @@
         <h1 class="text-2xl font-bold text-gray-800 dark:text-white">Nueva Reservación</h1>
     </div>
 
+    @php
+        $preselectedId = request('habitacion_id', old('habitacion_id'));
+        $selectedRoom = $preselectedId ? $habitaciones->firstWhere('id', $preselectedId) : null;
+        $preciosEspeciales = $selectedRoom ? $selectedRoom->preciosTemporada
+            ->where('fecha_fin', '>=', now()->format('Y-m-d'))
+            ->values() : collect();
+    @endphp
+
     <form action="{{ route('reservaciones.store') }}" method="POST"
         x-data="{
             habitacionId: '{{ $preselectedId }}',
@@ -133,13 +141,6 @@
                 </div>
 
                 <!-- Habitación (Selección por Cards / Confirmación) -->
-                @php
-                    $preselectedId = request('habitacion_id', old('habitacion_id'));
-                    $selectedRoom = $preselectedId ? $habitaciones->firstWhere('id', $preselectedId) : null;
-                    $preciosEspeciales = $selectedRoom ? $selectedRoom->preciosTemporada
-                        ->where('fecha_fin', '>=', now()->format('Y-m-d'))
-                        ->values() : collect();
-                @endphp
 
                 <div>
                     <div class="flex items-center justify-between mb-4">
